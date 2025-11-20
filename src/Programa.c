@@ -20,6 +20,7 @@ int main(int argc, char *argv[]) {
     printf("Número de gerações: %d\n", num_geracoes);
     printf("Tabuleiro inicial:\n");
     imprimir_tabuleiro(tab);
+    escrever_tabuleiro(tab, num_geracoes);
 
     desalocar_tabuleiro(tab);
     return 0;

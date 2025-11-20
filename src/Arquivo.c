@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
 #include "include/Tabuleiro.h"
 
 Tabuleiro* ler_tabuleiro(const char *caminho, int *num_geracoes) {
@@ -47,11 +44,42 @@ Tabuleiro* ler_tabuleiro(const char *caminho, int *num_geracoes) {
             return NULL;
         }
         
-        
-        
         mudar_celula(t, x, y, true);
     }
 
     fclose(arquivo);
     return t;
+}
+
+void escrever_tabuleiro(Tabuleiro *t, int num_geracoes) {
+    if (!t) return;
+
+    FILE *arquivo = fopen(ARQ_SAIDA, "w");
+    if (!arquivo) {
+        printf("Erro ao criar o arquivo saida.txt\n");
+        return;
+    }
+
+    // Conta células vivas
+    int num_celulas_vivas = 0;
+    for (int i = 0; i < t->linhas; i++) {
+        for (int j = 0; j < t->colunas; j++) {
+            if (t->celulas[i][j].estah_vivo[t->indice])
+                num_celulas_vivas++;
+        }
+    }
+
+    // Escreve no arquivo
+    fprintf(arquivo, "%d\n", num_geracoes);
+    fprintf(arquivo, "%d %d\n", t->linhas, t->colunas);
+    fprintf(arquivo, "%d\n", num_celulas_vivas);
+
+    for (int i = 0; i < t->linhas; i++) {
+        for (int j = 0; j < t->colunas; j++) {
+            if (t->celulas[i][j].estah_vivo[t->indice])
+                fprintf(arquivo, "%d %d\n", i, j);
+        }
+    }
+
+    fclose(arquivo);
 }
