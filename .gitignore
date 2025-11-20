@@ -56,3 +56,6 @@ dkms.conf
 
 #Binario
 Programa
+
+#Entrada de exemplo
+entrada.txt
