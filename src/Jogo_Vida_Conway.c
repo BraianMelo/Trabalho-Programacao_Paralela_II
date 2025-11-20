@@ -53,7 +53,7 @@ static void simular_uma_geracao(Jogo *jogo) {
                 if (vivos == 2 || vivos == 3)
                     t->celulas[i][j].estah_vivo[idx_novo] = true;
                     
-                if (vivos > 3)
+                if (vivos == 1 || vivos > 3)
 					t->celulas[i][j].estah_vivo[idx_novo] = false;
             } else {
                 // Célula morta

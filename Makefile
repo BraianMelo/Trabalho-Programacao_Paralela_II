@@ -1,37 +1,47 @@
 # Compilador e flags
 CC = gcc
 CFLAGS = -I include
+PTHREAD = -pthread
 
 # Diretórios
 SRC_DIR = src
 INC_DIR = include
 BUILD_DIR = build
 
-# Lista automática de .c em src/
+# Arquivos fonte
 SRC = $(wildcard $(SRC_DIR)/*.c)
 
-# Transforma a lista de .c em lista de .o dentro de build/
+# Arquivos objeto
 OBJ = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRC))
 
-# Nome do executável
-TARGET = Programa
+# Filtra apenas o arquivo paralelo e seu objeto
+PAR_SRC = $(SRC_DIR)/Jogo_Vida_Conway_Paralelo.c
+PAR_OBJ = $(BUILD_DIR)/Jogo_Vida_Conway_Paralelo.o
 
-all: $(TARGET)
+# Executáveis
+SEQ_TARGET = Programa
+PAR_TARGET = ProgramaParalelo
 
-# Geração do executável
-$(TARGET): $(OBJ)
-	$(CC) $(OBJ) -o $(TARGET)
+all: $(SEQ_TARGET) $(PAR_TARGET)
 
-# Regra para gerar build/*.o a partir de src/*.c
+# Liga executável sequencial
+$(SEQ_TARGET): $(OBJ)
+	$(CC) $(OBJ) -o $(SEQ_TARGET)
+
+# Liga executável paralelo (precisa de pthread)
+$(PAR_TARGET): $(OBJ)
+	$(CC) $(OBJ) $(PTHREAD) -o $(PAR_TARGET)
+
+# Compila objetos normais
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Garante que a pasta build existe
+# Pasta build
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(SEQ_TARGET) $(PAR_TARGET)
 	rm -rf $(BUILD_DIR)
 
 rebuild: clean all
