@@ -2,6 +2,7 @@
 CC = gcc
 CFLAGS = -I include
 PTHREAD = -pthread
+GPROF = -pg
 
 # Diretórios
 SRC_DIR = src
@@ -11,37 +12,28 @@ BUILD_DIR = build
 # Arquivos fonte
 SRC = $(wildcard $(SRC_DIR)/*.c)
 
-# Arquivos objeto
+# Objetos (.o)
 OBJ = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRC))
 
-# Filtra apenas o arquivo paralelo e seu objeto
-PAR_SRC = $(SRC_DIR)/Jogo_Vida_Conway_Paralelo.c
-PAR_OBJ = $(BUILD_DIR)/Jogo_Vida_Conway_Paralelo.o
+# Nome do executável
+TARGET = Programa
 
-# Executáveis
-SEQ_TARGET = Programa
-PAR_TARGET = ProgramaParalelo
+all: $(TARGET)
 
-all: $(SEQ_TARGET) $(PAR_TARGET)
+# Linkagem final (sempre com pthread e -pg)
+$(TARGET): $(OBJ)
+	$(CC) $(OBJ) $(PTHREAD) $(GPROF) -o $(TARGET)
 
-# Liga executável sequencial
-$(SEQ_TARGET): $(OBJ)
-	$(CC) $(OBJ) -o $(SEQ_TARGET)
-
-# Liga executável paralelo (precisa de pthread)
-$(PAR_TARGET): $(OBJ)
-	$(CC) $(OBJ) $(PTHREAD) -o $(PAR_TARGET)
-
-# Compila objetos normais
+# Compila cada .c com suporte a gprof
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(PTHREAD) $(GPROF) -c $< -o $@
 
-# Pasta build
+# Garantir que o diretório build existe
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 clean:
-	rm -f $(SEQ_TARGET) $(PAR_TARGET)
+	rm -f $(TARGET)
 	rm -rf $(BUILD_DIR)
 
 rebuild: clean all

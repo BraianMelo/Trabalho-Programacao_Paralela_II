@@ -97,7 +97,6 @@ static void simular_uma_geracao(JogoParalelo *jogo) {
 void simular_jogo_paralelo(JogoParalelo *jogo) {
     for (int i = 0; i < jogo->num_geracoes; i++) {
         simular_uma_geracao(jogo);
-        imprimir_tabuleiro(jogo->tabuleiro);  // MESMA COISA DO SEQUENCIAL
     }
 }
 

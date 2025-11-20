@@ -69,7 +69,6 @@ static void simular_uma_geracao(Jogo *jogo) {
 void simular_jogo(Jogo *jogo) {
     for (int i = 0; i < jogo->num_geracoes; i++){
         simular_uma_geracao(jogo);
-		imprimir_tabuleiro(jogo->tabuleiro);
 	}
 }
 
