@@ -1,9 +1,8 @@
 #include <stdio.h>
-#include <stdbool.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
-#include "include/Tabuleiro.h"
-#include "include/Arquivo.h"
+#include "include/Jogo_Vida_Conway.h"
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -11,17 +10,26 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    char *caminho_arquivo = argv[1];
+    char *caminho = argv[1];
 
-    int num_geracoes;
-    Tabuleiro *tab = ler_tabuleiro(caminho_arquivo, &num_geracoes);
-    if (!tab) return 1;
+    Jogo *jogo = criar_jogo(caminho);
+    if (!jogo) {
+        printf("Falha ao inicializar o jogo!\n");
+        return 1;
+    }
 
-    printf("Número de gerações: %d\n", num_geracoes);
+    printf("Número de gerações: %d\n", jogo->num_geracoes);
     printf("Tabuleiro inicial:\n");
-    imprimir_tabuleiro(tab);
-    escrever_tabuleiro(tab, num_geracoes);
+    imprimir_tabuleiro(jogo->tabuleiro);
 
-    desalocar_tabuleiro(tab);
+    simular_jogo(jogo);
+
+    printf("\nTabuleiro final:\n");
+    imprimir_tabuleiro(jogo->tabuleiro);
+
+    salvar_resultado(jogo);
+
+    destruir_jogo(jogo);
+
     return 0;
 }

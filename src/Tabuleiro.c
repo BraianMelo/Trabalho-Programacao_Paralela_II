@@ -38,6 +38,7 @@ void imprimir_tabuleiro(Tabuleiro *t) {
         }
         printf("\n");
     }
+	printf("\n");
 }
 
 void desalocar_tabuleiro(Tabuleiro *t) {

@@ -54,13 +54,12 @@ Tabuleiro* ler_tabuleiro(const char *caminho, int *num_geracoes) {
 void escrever_tabuleiro(Tabuleiro *t, int num_geracoes) {
     if (!t) return;
 
-    FILE *arquivo = fopen(ARQ_SAIDA, "w");
+    FILE *arquivo = fopen("saida.txt", "w");
     if (!arquivo) {
         printf("Erro ao criar o arquivo saida.txt\n");
         return;
     }
 
-    // Conta células vivas
     int num_celulas_vivas = 0;
     for (int i = 0; i < t->linhas; i++) {
         for (int j = 0; j < t->colunas; j++) {
@@ -69,7 +68,6 @@ void escrever_tabuleiro(Tabuleiro *t, int num_geracoes) {
         }
     }
 
-    // Escreve no arquivo
     fprintf(arquivo, "%d\n", num_geracoes);
     fprintf(arquivo, "%d %d\n", t->linhas, t->colunas);
     fprintf(arquivo, "%d\n", num_celulas_vivas);
