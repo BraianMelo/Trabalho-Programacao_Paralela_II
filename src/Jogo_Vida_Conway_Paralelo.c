@@ -1,20 +1,11 @@
 #include "include/Jogo_Vida_Conway_Paralelo.h"
 
-JogoParalelo* criar_jogo_paralelo(const char *caminho_arquivo, int num_threads) {
-    JogoParalelo *jogo = malloc(sizeof(JogoParalelo));
-    if (!jogo) return NULL;
+static pthread_barrier_t barreira;
+static ThreadArgs *args_threads = NULL;
+static pthread_t *threads = NULL;
+static int N_THREADS = 1;
 
-    jogo->tabuleiro = ler_tabuleiro(caminho_arquivo, &jogo->num_geracoes);
-    if (!jogo->tabuleiro) {
-        free(jogo);
-        return NULL;
-    }
-
-    jogo->num_threads = num_threads;
-    return jogo;
-}
-
-static int contar_vizinhos_vivos(JogoParalelo *jogo, int linha, int coluna) {
+static int contar_vizinhos_vivos(Jogo *jogo, int linha, int coluna) {
     int count = 0;
     int l_max = jogo->tabuleiro->linhas;
     int c_max = jogo->tabuleiro->colunas;
@@ -32,81 +23,75 @@ static int contar_vizinhos_vivos(JogoParalelo *jogo, int linha, int coluna) {
     return count;
 }
 
-void* processar_linhas(void *arg) {
-    ThreadArgs *args = (ThreadArgs*) arg;
-    JogoParalelo *jogo = args->jogo;
 
+static void* processar_fatia(void *arg) {
+    ThreadArgs *info = (ThreadArgs*) arg;
+    Jogo *jogo = info->jogo;
     Tabuleiro *t = jogo->tabuleiro;
-    int idx_atual = t->indice;
-    int idx_novo = !t->indice;
+    int c_max = t->colunas;
 
-    for (int i = args->linha_inicio; i < args->linha_fim; i++) {
-        for (int j = 0; j < t->colunas; j++) {
-            int vivos = contar_vizinhos_vivos(jogo, i, j);
+    for (int g = 0; g < jogo->num_geracoes; g++) {
 
-            if (t->celulas[i][j].estah_vivo[idx_atual]) {
-                if (vivos == 2 || vivos == 3)
-                    t->celulas[i][j].estah_vivo[idx_novo] = true;
-                else
-                    t->celulas[i][j].estah_vivo[idx_novo] = false;
-            } else {
-                if (vivos == 3)
-                    t->celulas[i][j].estah_vivo[idx_novo] = true;
+        int idx_atual = t->indice;
+        int idx_novo = !t->indice;
+
+        // Zera e processa sua fatia ao mesmo tempo
+        for (int i = info->linha_inicio; i < info->linha_fim; i++) {
+            for (int j = 0; j < c_max; j++) {
+                t->celulas[i][j].estah_vivo[idx_novo] = false;
+
+                int vivos = contar_vizinhos_vivos(jogo, i, j);
+                bool atual = t->celulas[i][j].estah_vivo[idx_atual];
+
+                if (atual) {
+                    if (vivos == 2 || vivos == 3)
+                        t->celulas[i][j].estah_vivo[idx_novo] = true;
+                } else {
+                    if (vivos == 3)
+                        t->celulas[i][j].estah_vivo[idx_novo] = true;
+                }
             }
         }
+
+        // Apenas uma thread troca o índice e todas aguardam aqui
+        if (info->linha_inicio == 0)
+            t->indice = idx_novo;
+
+        // Uma única barreira para sincronizar todas as threads antes da próxima geração
+        pthread_barrier_wait(&barreira);
     }
 
     return NULL;
 }
 
-static void simular_uma_geracao(JogoParalelo *jogo) {
-    pthread_t threads[jogo->num_threads];
-    ThreadArgs args[jogo->num_threads];
+void simular_jogo_paralelo(Jogo *jogo, int num_threads) {
 
+    N_THREADS = num_threads;
     Tabuleiro *t = jogo->tabuleiro;
-    int l_max = t->linhas;
-    int idx_novo = !t->indice;
+    int linhas = t->linhas;
 
-    // Zera camada nova
-    for (int i = 0; i < l_max; i++)
-        for (int j = 0; j < t->colunas; j++)
-            t->celulas[i][j].estah_vivo[idx_novo] = false;
+    threads = malloc(sizeof(pthread_t) * N_THREADS);
+    args_threads = malloc(sizeof(ThreadArgs) * N_THREADS);
 
-    int linhas_por_thread = l_max / jogo->num_threads;
+    pthread_barrier_init(&barreira, NULL, N_THREADS);
 
-    // Cria threads
-    for (int i = 0; i < jogo->num_threads; i++) {
-        args[i].jogo = jogo;
-        args[i].linha_inicio = i * linhas_por_thread;
+    int fatia = linhas / N_THREADS;
 
-        if (i == jogo->num_threads - 1)
-            args[i].linha_fim = l_max;  
-        else
-            args[i].linha_fim = (i + 1) * linhas_por_thread;
+    for (int i = 0; i < N_THREADS; i++) {
 
-        pthread_create(&threads[i], NULL, processar_linhas, &args[i]);
+        args_threads[i].jogo = jogo;
+        args_threads[i].linha_inicio = i * fatia;
+        args_threads[i].linha_fim =
+            (i == N_THREADS - 1 ? linhas : (i + 1) * fatia);
+
+        pthread_create(&threads[i], NULL, processar_fatia, &args_threads[i]);
     }
 
-    // Espera todas as threads terminarem
-    for (int i = 0; i < jogo->num_threads; i++)
+    for (int i = 0; i < N_THREADS; i++)
         pthread_join(threads[i], NULL);
 
-    t->indice = idx_novo;
-}
+    pthread_barrier_destroy(&barreira);
 
-void simular_jogo_paralelo(JogoParalelo *jogo) {
-    for (int i = 0; i < jogo->num_geracoes; i++) {
-        simular_uma_geracao(jogo);
-    }
-}
-
-void salvar_resultado_paralelo(JogoParalelo *jogo) {
-    escrever_tabuleiro(jogo->tabuleiro, jogo->num_geracoes);
-}
-
-void destruir_jogo_paralelo(JogoParalelo *jogo) {
-    if (!jogo) return;
-    if (jogo->tabuleiro)
-        desalocar_tabuleiro(jogo->tabuleiro);
-    free(jogo);
+    free(threads);
+    free(args_threads);
 }

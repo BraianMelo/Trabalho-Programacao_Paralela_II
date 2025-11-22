@@ -16,44 +16,31 @@ int main(int argc, char *argv[]) {
 
     char *caminho = argv[1];
     char *modo = argv[2];
+    
+    Jogo *jogo = criar_jogo(caminho);
+    if (!jogo) {
+		printf("Falha ao inicializar o jogo!\n");
+        return 1;
+    }
 
     if (strcmp(modo, "seq") == 0) {
-        printf("\nModo Sequencial escolhido. \n");
-        
-        Jogo *jogo = criar_jogo(caminho);
-        if (!jogo) {
-            printf("Falha ao inicializar o jogo!\n");
-            return 1;
-        }
-
+        printf("Modo Sequencial escolhido. \n");
         printf("Número de gerações: %d\n", jogo->num_geracoes);
 
         simular_jogo(jogo);
-
-        printf("\nTabuleiro final:\n");
-        imprimir_tabuleiro(jogo->tabuleiro);
 
         salvar_resultado(jogo);
         destruir_jogo(jogo);
 
     } else if (strcmp(modo, "par") == 0) {
-        printf("\nModo Paralelo escolhido.\n");
-        
-        JogoParalelo *jogo = criar_jogo_paralelo(caminho, NUM_THREADS);
-        if (!jogo) {
-            printf("Falha ao inicializar o jogo!\n");
-            return 1;
-        }
-
+        printf("Modo Paralelo escolhido.\n");
         printf("Número de gerações: %d\n", jogo->num_geracoes);
-
-        simular_jogo_paralelo(jogo);
-
-        printf("\nTabuleiro final:\n");
-        imprimir_tabuleiro(jogo->tabuleiro);
-
-        salvar_resultado_paralelo(jogo);
-        destruir_jogo_paralelo(jogo);
+        printf("Número de threads: %d\n", NUM_THREADS);
+        
+        simular_jogo_paralelo(jogo, NUM_THREADS);
+        
+        salvar_resultado(jogo);
+        destruir_jogo(jogo);
 
     } else {
         printf("Modo inválido! Use 'seq' para sequencial ou 'par' para paralelo.\n");
