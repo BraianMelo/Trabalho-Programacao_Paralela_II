@@ -22,15 +22,16 @@ int main(int argc, char *argv[]) {
 		printf("Falha ao inicializar o jogo!\n");
         return 1;
     }
+    
+    printf("Tamanho do tabuleiro: %d x %d\n", jogo->tabuleiro->linhas, jogo->tabuleiro->colunas);
+    printf("Número de gerações: %d\n", jogo->num_geracoes);
+    
 
     if (strcmp(modo, "seq") == 0) {
         printf("Modo Sequencial escolhido. \n");
-        printf("Número de gerações: %d\n", jogo->num_geracoes);
 
         simular_jogo(jogo);
 
-        salvar_resultado(jogo);
-        destruir_jogo(jogo);
 
     } else if (strcmp(modo, "par") == 0) {
         printf("Modo Paralelo escolhido.\n");
@@ -39,13 +40,15 @@ int main(int argc, char *argv[]) {
         
         simular_jogo_paralelo(jogo, NUM_THREADS);
         
-        salvar_resultado(jogo);
-        destruir_jogo(jogo);
-
     } else {
         printf("Modo inválido! Use 'seq' para sequencial ou 'par' para paralelo.\n");
         return 1;
     }
+    
+    salvar_resultado(jogo);
+    destruir_jogo(jogo);
+    
+    printf("Jogo simulado! Resultado salvo em saida.txt\n");
 
     return 0;
 }

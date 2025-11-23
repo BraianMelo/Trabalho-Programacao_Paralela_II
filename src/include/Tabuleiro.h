@@ -8,8 +8,7 @@
 
 typedef struct Celula {
 	bool estah_vivo[2]; 
-	char padding[64 - sizeof(bool) * 2];
-} Celula __attribute__((aligned(64)));
+} Celula;
 
 typedef struct Tabuleiro {
 	int linhas;
