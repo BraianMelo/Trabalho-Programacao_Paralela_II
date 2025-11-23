@@ -6,7 +6,7 @@
 #include "include/Jogo_Vida_Conway.h"
 #include "include/Jogo_Vida_Conway_Paralelo.h"
 
-#define NUM_THREADS 4
+#define NUM_THREADS 2
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {

@@ -35,5 +35,7 @@ $(BUILD_DIR):
 clean:
 	rm -f $(TARGET)
 	rm -rf $(BUILD_DIR)
+	rm -f gmon.out
+	rm -f saida.txt
 
-rebuild: clean all
+recompile: clean all

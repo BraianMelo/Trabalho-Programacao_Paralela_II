@@ -4,10 +4,12 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct Celula {
 	bool estah_vivo[2]; 
-} Celula;
+	char padding[64 - sizeof(bool) * 2];
+} Celula __attribute__((aligned(64)));
 
 typedef struct Tabuleiro {
 	int linhas;
